@@ -17,7 +17,6 @@ export class CoffeesController {
   constructor(private readonly coffeesService: CoffeesService) {}
   @Get()
   findAll(@Query() paginationQuery) {
-    // const { limit, offset } = paginationQuery;
     return this.coffeesService.findAll();
   }
 
@@ -28,7 +27,6 @@ export class CoffeesController {
 
   @Post()
   create(@Body() createCoffeeDto: CreateCoffeeDto) {
-    console.log(createCoffeeDto instanceof CreateCoffeeDto);
     return this.coffeesService.create(createCoffeeDto);
   }
 

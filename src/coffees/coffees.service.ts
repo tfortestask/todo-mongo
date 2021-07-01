@@ -1,45 +1,42 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { COFFEES_REPOSITORY } from 'src/core/constants';
+import { CreateCoffeeDto } from './dto/create-coffee.dto';
+import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 import { Coffee } from './entities/coffee.entity';
 
 @Injectable()
 export class CoffeesService {
-  private coffees: Coffee[] = [
-    {
-      id: 1,
-      name: 'Shipwreck Roast',
-      breand: 'Buddy Brew',
-      flavors: ['chocolate', 'vanilla'],
-    },
-  ];
+  constructor(
+    @Inject(COFFEES_REPOSITORY)
+    private readonly coffeesRepository: typeof Coffee,
+  ) {}
 
-  findAll() {
-    return this.coffees;
+  async findAll(): Promise<Coffee[]> {
+    return this.coffeesRepository.findAll<Coffee>();
   }
 
-  findOne(id: string) {
-    const coffee = this.coffees.find((item) => item.id === +id);
+  async findOne(id: string): Promise<Coffee> {
+    const coffee = await this.coffeesRepository.findByPk<Coffee>(id);
     if (!coffee) {
       throw new NotFoundException(`Coffee #${id} not found`);
     }
+
     return coffee;
   }
 
-  create(createCoffeDto: any) {
-    this.coffees.push(createCoffeDto);
-    return createCoffeDto;
+  async create(createCoffeDto: CreateCoffeeDto): Promise<Coffee> {
+    return this.coffeesRepository.create<Coffee>(createCoffeDto);
   }
 
-  update(id: string, updateCoffeeDto: any) {
-    const existingCoffee = this.findOne(id);
-    if (existingCoffee) {
-      // update
-    }
+  async update(id: string, updateCoffeeDto: UpdateCoffeeDto): Promise<Coffee> {
+    const coffee = await this.findOne(id);
+
+    return coffee.update({ ...updateCoffeeDto });
   }
 
-  remove(id: string) {
-    const coffeeIndex = this.coffees.findIndex((item) => item.id === +id);
-    if (coffeeIndex >= 0) {
-      this.coffees.splice(coffeeIndex, 1);
-    }
+  async remove(id: string): Promise<void> {
+    const coffee = await this.findOne(id);
+
+    return coffee.destroy();
   }
 }
